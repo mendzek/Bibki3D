@@ -11,6 +11,7 @@ def AcceptLogPass():
         print("nice")
 
         mainWindow = MainWindow()
+        mainWindow.tableViewInsertStart()
 
     else:
         print("not nice")
