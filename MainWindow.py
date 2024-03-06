@@ -1,11 +1,12 @@
 from tkinter import *
 from tkinter import ttk
 import sqlite3
-import SelectedWorkingWindow
+from SelectedWorkingWindow import *
 
 class MainWindow(Tk):
 
-    selectedPeople=""
+    selectedPeople = ""
+    selectedPeopleList = list()
 
     def __init__(self):
         super().__init__()
@@ -27,7 +28,7 @@ class MainWindow(Tk):
         self.config(menu=self.mainMenu)
 
         self.label=ttk.Label(self,text="asd")
-        self.label.pack(anchor=N, expand=1)
+        self.label.pack(anchor=N, fill=X,expand=1)
 
         self.connect = sqlite3.connect("D:\\Sqlite\\databases\\db_bibki.db", timeout=5.0, detect_types=0, isolation_level='DEFERRED', check_same_thread=True,factory=sqlite3.Connection, cached_statements=128, uri=False)
         self.cursor = self.connect.cursor()
@@ -46,7 +47,7 @@ class MainWindow(Tk):
         if(self.check==False):
             self.check=True
             MainWindow.selectedPeople = self.selectedPeople
-            self.selectedWorkingWindow = SelectedWorkingWindow
+            selectedWorkingWindow = SelectedWorkingWindow()
             #сделать эдит таблицы
         else:
             self.check=False
@@ -73,9 +74,13 @@ class MainWindow(Tk):
     def select(self,event):
 
         for selected_item in self.tree.selection():
+            MainWindow.selectedPeopleList.clear()
+            self.selectedPeople = ""
             self.item = self.tree.item(selected_item)
             self.person = self.item["values"]
+            MainWindow.selectedPeopleList.append(self.item["values"])
             self.selectedPeople = f"{self.selectedPeople}{self.person}\n"
+
         self.label["text"] = self.selectedPeople
         print(self.selectedPeople)
 
