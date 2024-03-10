@@ -38,7 +38,6 @@ class SelectedWorkingWindow(Tk):
         self.BT_save.pack(expand=1,side=BOTTOM)
 
     def BT_save(self):
-
         self.cursor = self.connect.cursor()
         for x in range(len(self.columns)):
             self.cursor.execute("UPDATE People SET %(first)s = '%(second)s' WHERE ID = '%(third)s'" % {"first": self.columns[x], "second": self.entrysList[x].get(), "third": self.selectedPeopleList[0]})

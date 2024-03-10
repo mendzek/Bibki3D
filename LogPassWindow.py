@@ -11,7 +11,7 @@ def AcceptLogPass():
         print("nice")
 
         mainWindow = MainWindow()
-        mainWindow.tableViewInsert()
+        mainWindow.tableViewInsert(False)
         LogPassWindow.destroy()
 
     else:
