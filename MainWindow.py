@@ -71,6 +71,14 @@ class MainWindow(Tk):
         else:
             self.cursor.execute("DELETE FROM People WHERE ID = %(first)s" % {"first": self.selectedPeopleList[0]})
             self.connect.commit()
+            self.cursor.execute("SELECT COUNT(*) FROM People")
+            self.numOfRows = self.cursor.fetchone()
+            for x in range(self.numOfRows[0]):
+                self.cursor.execute("UPDATE People SET ID = '%(first)s'" % {"first": x})
+                self.connect.commit()
+            for x in range(self.numOfRows[0]):
+                self.cursor.execute("UPDATE People SET ID = '%(first)s' WHERE ID = '%(second)s'" % {"first": x,"second": x})
+                self.connect.commit()
             mainWindow=MainWindow()
             mainWindow.tableViewInsert(True)
             self.destroy()
@@ -90,9 +98,9 @@ class MainWindow(Tk):
                                            cached_statements=128, uri=False)
             MainWindow.connect = self.connect
             self.cursor = self.connect.cursor()
-            MainWindow.columns=()
+            MainWindow.columns = ()
             self.cursor.execute("SELECT COUNT(*) FROM People")
-            self.numOfRows = self.cursor.fetchone()
+            self.numOfRows = self.cursor.fetchone()[0]
             self.numOfColumns=self.cursor.execute("SELECT COUNT(*) FROM pragma_table_info('People')").fetchone()[0]
             for x in range(self.numOfColumns):
                 MainWindow.columns += self.cursor.execute(f"SELECT name FROM pragma_table_info('People') Where cid={x}").fetchone()
@@ -108,19 +116,19 @@ class MainWindow(Tk):
 
             self.headValues.extend(MainWindow.columns)
             self.checkTemp=False
-            for x in range(self.numOfRows[0]+1):
+
+            for x in range(self.numOfRows+1):
                 self.cursor.execute(f"SELECT * FROM People WHERE id={x}")
-                self.tableValues.append(self.cursor.fetchone())
-                if self.tableValues[0]==None and self.checkTemp==False:
+                self.tuple = (x,)
+                self.tupleFromDB = self.cursor.fetchone()
+                if self.tupleFromDB==None and self.checkTemp==False:
                     self.checkTemp=True
-                    self.tableValues.clear()
-            for x in self.tableValues:
-                if x[0] is None:
-                    self.listTemp = list(x)
-                    self.listTemp[0] = 'NULL'
-                    self.tupleTemp = tuple(self.listTemp)
-                    self.tree.insert("", END, values=self.tupleTemp)
                 else:
+                    for y in self.tupleFromDB:
+                        self.tuple += (y,)
+                    self.tableValues.append(self.tuple)
+                    del self.tuple
+            for x in self.tableValues:
                     self.tree.insert("", END, values=x)
         else:
             self.connect = sqlite3.connect(self.sqlPath, timeout=5.0, detect_types=0,
@@ -129,9 +137,9 @@ class MainWindow(Tk):
                                            cached_statements=128, uri=False)
             MainWindow.connect = self.connect
             self.cursor = self.connect.cursor()
-            MainWindow.columns = ()
+            MainWindow.columns = ("Row number",)
             self.cursor.execute("SELECT COUNT(*) FROM People")
-            self.numOfRows = self.cursor.fetchone()
+            self.numOfRows = self.cursor.fetchone()[0]
             self.numOfColumns = self.cursor.execute("SELECT COUNT(*) FROM pragma_table_info('People')").fetchone()[0]
             for x in range(self.numOfColumns):
                 MainWindow.columns += self.cursor.execute(
@@ -148,20 +156,20 @@ class MainWindow(Tk):
 
             self.headValues.extend(MainWindow.columns)
             self.checkTemp = False
-            for x in range(self.numOfRows[0] + 1):
+
+            for x in range(self.numOfRows + 1):
                 self.cursor.execute(f"SELECT * FROM People WHERE id={x}")
-                self.tableValues.append(self.cursor.fetchone())
-                if self.tableValues[0] == None and self.checkTemp == False:
+                self.tuple = (x,)
+                self.tupleFromDB = self.cursor.fetchone()
+                if self.tupleFromDB == None and self.checkTemp == False:
                     self.checkTemp = True
-                    self.tableValues.clear()
-            for x in self.tableValues:
-                if x[0] is None:
-                    self.listTemp = list(x)
-                    self.listTemp[0] = 'NULL'
-                    self.tupleTemp = tuple(self.listTemp)
-                    self.tree.insert("", END, values=self.tupleTemp)
                 else:
-                    self.tree.insert("", END, values=x)
+                    for y in self.tupleFromDB:
+                        self.tuple += (y,)
+                    self.tableValues.append(self.tuple)
+                    del self.tuple
+            for x in self.tableValues:
+                self.tree.insert("", END, values=x)
 
 
     def select(self,event):
