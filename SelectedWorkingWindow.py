@@ -19,6 +19,7 @@ class SelectedWorkingWindow(Tk):
         self.connect = LogPassWindow.MainWindow.connect
 
         self.entrysList = list()
+        self.LabelList = list()
         self.selectedPeopleList = LogPassWindow.MainWindow.selectedPeopleList.copy()
         self.columns = LogPassWindow.MainWindow.columns
 
@@ -29,9 +30,12 @@ class SelectedWorkingWindow(Tk):
         self.label.pack(expand=1,side=TOP)
 
         for x in range(len(self.selectedPeopleList)):
+            self.label = ttk.Label(self, text=f"{LogPassWindow.MainWindow.columns[x]}")
+            self.label.pack(expand=1)
+            self.LabelList.append(self.label)
             self.entry = ttk.Entry(self,name="entry_"+str(x), state=NORMAL)
             self.entry.insert(0,f"{self.selectedPeopleList[x]}")
-            self.entry.pack(expand=1,side=LEFT)
+            self.entry.pack(expand=1)
             self.entrysList.append(self.entry)
 
         self.BT_save = ttk.Button(self, text="Сохранить", command=self.BT_save)

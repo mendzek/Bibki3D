@@ -59,31 +59,16 @@ class MainWindow(Tk):
                                        cached_statements=128, uri=False)
         self.cursor = self.connect.cursor()
         if(len(self.selectedPeopleList)==0):
-            self.label["text"] = "Ничего не выбрано"                #Не работает если удалить строку посередине
-        #elif self.selectedPeopleList[0] == max(self.selectedPeopleList):
-        #    self.temp = self.cursor.execute("SELECT COUNT(*) FROM People").fetchone()[0]
-        #    for x in range(self.temp):
-        #        self.cursor.execute("DELETE FROM People WHERE ID = %(first)s; UPDATE People SET %(second)s = '%(third)s' WHERE ID = '%(fourth)s'" % {"first": self.selectedPeopleList[0], "second": self.columns[0], "third": self.selectedPeopleList[x]})
-        #        self.connect.commit()
-        #    mainWindow = MainWindow()
-        #    mainWindow.tableViewInsert(True)
-        #    self.destroy()
+            self.label["text"] = "Ничего не выбрано"
         else:
             self.cursor.execute("DELETE FROM People WHERE ID = %(first)s" % {"first": self.selectedPeopleList[0]})
             self.connect.commit()
-            self.cursor.execute("SELECT COUNT(*) FROM People")
-            self.numOfRows = self.cursor.fetchone()
-            for x in range(self.numOfRows[0]):
-                self.cursor.execute("UPDATE People SET ID = '%(first)s'" % {"first": x})
-                self.connect.commit()
-            for x in range(self.numOfRows[0]):
-                self.cursor.execute("UPDATE People SET ID = '%(first)s' WHERE ID = '%(second)s'" % {"first": x,"second": x})
-                self.connect.commit()
             mainWindow=MainWindow()
             mainWindow.tableViewInsert(True)
             self.destroy()
 
     def menuUpdateTable(self):
+        self.selectedPeople = None
         mainWindow=MainWindow()
         mainWindow.tableViewInsert(True)
         self.destroy()
@@ -99,6 +84,8 @@ class MainWindow(Tk):
             MainWindow.connect = self.connect
             self.cursor = self.connect.cursor()
             MainWindow.columns = ()
+            self.cursor.execute("CREATE TABLE IF NOT EXISTS People (id INTEGER NOT NULL UNIQUE, full_name TEXT, exp INTEGER, salary INTEGER, position TEXT Text, PRIMARY KEY(id AUTOINCREMENT));")
+            self.connect.commit()
             self.cursor.execute("SELECT COUNT(*) FROM People")
             self.numOfRows = self.cursor.fetchone()[0]
             self.numOfColumns=self.cursor.execute("SELECT COUNT(*) FROM pragma_table_info('People')").fetchone()[0]
@@ -119,17 +106,15 @@ class MainWindow(Tk):
 
             for x in range(self.numOfRows+1):
                 self.cursor.execute(f"SELECT * FROM People WHERE id={x}")
-                self.tuple = (x,)
-                self.tupleFromDB = self.cursor.fetchone()
-                if self.tupleFromDB==None and self.checkTemp==False:
+                if self.checkTemp==False:
                     self.checkTemp=True
                 else:
-                    for y in self.tupleFromDB:
-                        self.tuple += (y,)
-                    self.tableValues.append(self.tuple)
-                    del self.tuple
+                    self.tableValues.append(self.cursor.fetchone())
             for x in self.tableValues:
+                try:
                     self.tree.insert("", END, values=x)
+                except:
+                    pass
         else:
             self.connect = sqlite3.connect(self.sqlPath, timeout=5.0, detect_types=0,
                                            isolation_level='DEFERRED', check_same_thread=True,
@@ -137,7 +122,7 @@ class MainWindow(Tk):
                                            cached_statements=128, uri=False)
             MainWindow.connect = self.connect
             self.cursor = self.connect.cursor()
-            MainWindow.columns = ("Row number",)
+            MainWindow.columns = ()
             self.cursor.execute("SELECT COUNT(*) FROM People")
             self.numOfRows = self.cursor.fetchone()[0]
             self.numOfColumns = self.cursor.execute("SELECT COUNT(*) FROM pragma_table_info('People')").fetchone()[0]
@@ -157,19 +142,17 @@ class MainWindow(Tk):
             self.headValues.extend(MainWindow.columns)
             self.checkTemp = False
 
-            for x in range(self.numOfRows + 1):
+            for x in range(self.numOfRows+1):
                 self.cursor.execute(f"SELECT * FROM People WHERE id={x}")
-                self.tuple = (x,)
-                self.tupleFromDB = self.cursor.fetchone()
-                if self.tupleFromDB == None and self.checkTemp == False:
-                    self.checkTemp = True
+                if self.checkTemp==False:
+                    self.checkTemp=True
                 else:
-                    for y in self.tupleFromDB:
-                        self.tuple += (y,)
-                    self.tableValues.append(self.tuple)
-                    del self.tuple
+                    self.tableValues.append(self.cursor.fetchone())
             for x in self.tableValues:
-                self.tree.insert("", END, values=x)
+                try:
+                    self.tree.insert("", END, values=x)
+                except:
+                    pass
 
 
     def select(self,event):
